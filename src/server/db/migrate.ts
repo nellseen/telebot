@@ -27,17 +27,12 @@ export async function runMigrations(): Promise<{ applied: boolean; message: stri
     }
 
     const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
-    // Split SQL by semicolons, filtering out comments and blank statements
-    const statements = migrationSql
-      .split(';')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith('--'));
+    logger.info('DB_MIGRATION', 'Applying database migrations to SQLite...');
 
-    logger.info('DB_MIGRATION', `Applying ${statements.length} migration statements to SQLite database...`);
-
-    for (const sql of statements) {
-      await prisma.$executeRawUnsafe(sql);
-    }
+    const { DatabaseSync } = await import('node:sqlite');
+    const db = new DatabaseSync(DB_FILE_PATH);
+    db.exec(migrationSql);
+    db.close();
 
     logger.info('DB_MIGRATION', 'Migration applied successfully!');
     return { applied: true, message: 'Initial migration applied successfully' };

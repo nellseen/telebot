@@ -62,19 +62,11 @@ try {
   const migrationPath = path.join(ROOT_DIR, 'prisma/migrations/0_init/migration.sql');
   if (fs.existsSync(migrationPath)) {
     const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
-    const statements = migrationSql
-      .split(';')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith('--'));
-
-    // Execute using node:sqlite or Prisma
     const { DatabaseSync } = await import('node:sqlite');
     const db = new DatabaseSync(DB_FILE);
-    for (const sql of statements) {
-      db.exec(sql);
-    }
+    db.exec(migrationSql);
     db.close();
-    console.log(`✅ 5. Database SQLite berhasil diinisialisasi (${statements.length} instruksi migration diterapkan).`);
+    console.log('✅ 5. Database SQLite berhasil diinisialisasi dengan migrasi skema.');
   }
 } catch (err) {
   console.error('❌ Gagal menerapkan migration:', err.message);

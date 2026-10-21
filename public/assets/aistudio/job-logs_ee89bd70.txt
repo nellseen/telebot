@@ -1,0 +1,227 @@
+﻿2026-10-21T01:02:20.7393737Z Current runner version: '2.337.0'
+2026-10-21T01:02:20.7433409Z ##[group]Runner Image Provisioner
+2026-10-21T01:02:20.7434934Z Hosted Compute Agent
+2026-10-21T01:02:20.7436007Z Version: 20261015.610
+2026-10-21T01:02:20.7437149Z Commit: 267fdb4e8bbec4ab5ea31367f3a00d5c480c7656
+2026-10-21T01:02:20.7438588Z Build Date: 2026-10-14T17:06:54Z
+2026-10-21T01:02:20.7439894Z Worker ID: {b0bc48ba-4d1a-4825-bc5d-5c67bbb2d96b}
+2026-10-21T01:02:20.7441310Z Region: eastus2
+2026-10-21T01:02:20.7442532Z Cloud: Azure
+2026-10-21T01:02:20.7443902Z ##[endgroup]
+2026-10-21T01:02:20.7446455Z ##[group]Operating System
+2026-10-21T01:02:20.7447656Z Ubuntu
+2026-10-21T01:02:20.7448592Z 24.04.5
+2026-10-21T01:02:20.7449663Z LTS
+2026-10-21T01:02:20.7450569Z ##[endgroup]
+2026-10-21T01:02:20.7451705Z ##[group]Runner Image
+2026-10-21T01:02:20.7453254Z Image: ubuntu-24.04
+2026-10-21T01:02:20.7454308Z Version: 20261018.339.1
+2026-10-21T01:02:20.7456622Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261018.339/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-21T01:02:20.7459623Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261018.339
+2026-10-21T01:02:20.7461548Z ##[endgroup]
+2026-10-21T01:02:20.7464773Z ##[group]GITHUB_TOKEN Permissions
+2026-10-21T01:02:20.7467753Z Contents: read
+2026-10-21T01:02:20.7468871Z Metadata: read
+2026-10-21T01:02:20.7470237Z Packages: read
+2026-10-21T01:02:20.7471279Z ##[endgroup]
+2026-10-21T01:02:20.7474547Z Secret source: Actions
+2026-10-21T01:02:20.7476148Z Cache mode: write
+2026-10-21T01:02:20.7477842Z Prepare workflow directory
+2026-10-21T01:02:20.7952651Z Prepare all required actions
+2026-10-21T01:02:20.8023653Z Getting action download info
+2026-10-21T01:02:21.0114496Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-21T01:02:21.1286918Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-21T01:02:21.3641379Z Complete job name: Node.js 22 CI on Ubuntu
+2026-10-21T01:02:21.4449594Z ##[group]Run actions/checkout@v4
+2026-10-21T01:02:21.4450483Z with:
+2026-10-21T01:02:21.4450940Z   repository: nellseen/telebot
+2026-10-21T01:02:21.4454982Z   token: ***
+2026-10-21T01:02:21.4455438Z   ssh-strict: true
+2026-10-21T01:02:21.4455877Z   ssh-user: git
+2026-10-21T01:02:21.4456325Z   persist-credentials: true
+2026-10-21T01:02:21.4456809Z   clean: true
+2026-10-21T01:02:21.4457253Z   sparse-checkout-cone-mode: true
+2026-10-21T01:02:21.4457773Z   fetch-depth: 1
+2026-10-21T01:02:21.4458209Z   fetch-tags: false
+2026-10-21T01:02:21.4458652Z   show-progress: true
+2026-10-21T01:02:21.4459102Z   lfs: false
+2026-10-21T01:02:21.4459519Z   submodules: false
+2026-10-21T01:02:21.4459973Z   set-safe-directory: true
+2026-10-21T01:02:21.4460497Z   allow-unsafe-pr-checkout: false
+2026-10-21T01:02:21.4461291Z ##[endgroup]
+2026-10-21T01:02:21.5533660Z Syncing repository: nellseen/telebot
+2026-10-21T01:02:21.5535583Z ##[group]Getting Git version info
+2026-10-21T01:02:21.5536400Z Working directory is '/home/runner/work/telebot/telebot'
+2026-10-21T01:02:21.5537410Z [command]/usr/bin/git version
+2026-10-21T01:02:21.5669548Z git version 2.55.0
+2026-10-21T01:02:21.5698321Z ##[endgroup]
+2026-10-21T01:02:21.5716280Z Temporarily overriding HOME='/home/runner/work/_temp/b9b7e90b-bdac-462c-947b-3d46c2b41ef7' before making global git config changes
+2026-10-21T01:02:21.5718932Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-21T01:02:21.5722167Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/telebot/telebot
+2026-10-21T01:02:21.5786789Z Deleting the contents of '/home/runner/work/telebot/telebot'
+2026-10-21T01:02:21.5797624Z ##[group]Initializing the repository
+2026-10-21T01:02:21.5799032Z [command]/usr/bin/git init /home/runner/work/telebot/telebot
+2026-10-21T01:02:21.5933742Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-21T01:02:21.5935317Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-21T01:02:21.5936972Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-21T01:02:21.5938004Z hint: call:
+2026-10-21T01:02:21.5938576Z hint:
+2026-10-21T01:02:21.5939300Z hint: 	git config --global init.defaultBranch <name>
+2026-10-21T01:02:21.5940155Z hint:
+2026-10-21T01:02:21.5940961Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-21T01:02:21.5942275Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-21T01:02:21.5943897Z hint:
+2026-10-21T01:02:21.5944705Z hint: 	git branch -m <name>
+2026-10-21T01:02:21.5945576Z hint:
+2026-10-21T01:02:21.5946689Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-21T01:02:21.5948480Z Initialized empty Git repository in /home/runner/work/telebot/telebot/.git/
+2026-10-21T01:02:21.5965944Z [command]/usr/bin/git remote add origin https://github.com/nellseen/telebot
+2026-10-21T01:02:21.6027887Z ##[endgroup]
+2026-10-21T01:02:21.6029478Z ##[group]Disabling automatic garbage collection
+2026-10-21T01:02:21.6032101Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-21T01:02:21.6073353Z ##[endgroup]
+2026-10-21T01:02:21.6074753Z ##[group]Setting up auth
+2026-10-21T01:02:21.6082062Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-21T01:02:21.6119565Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-21T01:02:21.6565218Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-21T01:02:21.6611295Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-21T01:02:21.6860026Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-21T01:02:21.6904282Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-21T01:02:21.7167376Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-21T01:02:21.7220298Z ##[endgroup]
+2026-10-21T01:02:21.7221477Z ##[group]Fetching the repository
+2026-10-21T01:02:21.7231526Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +648558afb4c5171dddbb9b53e82630ab9bf9f074:refs/remotes/origin/main
+2026-10-21T01:02:22.0321096Z From https://github.com/nellseen/telebot
+2026-10-21T01:02:22.0322231Z  * [new ref]         648558afb4c5171dddbb9b53e82630ab9bf9f074 -> origin/main
+2026-10-21T01:02:22.0326545Z ##[endgroup]
+2026-10-21T01:02:22.0327619Z ##[group]Determining the checkout info
+2026-10-21T01:02:22.0329669Z ##[endgroup]
+2026-10-21T01:02:22.0336351Z [command]/usr/bin/git sparse-checkout disable
+2026-10-21T01:02:22.0402687Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-21T01:02:22.0445171Z ##[group]Checking out the ref
+2026-10-21T01:02:22.0485506Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-21T01:02:22.0614905Z Switched to a new branch 'main'
+2026-10-21T01:02:22.0620187Z branch 'main' set up to track 'origin/main'.
+2026-10-21T01:02:22.0626770Z ##[endgroup]
+2026-10-21T01:02:22.0680406Z [command]/usr/bin/git log -1 --format=%H
+2026-10-21T01:02:22.0713966Z 648558afb4c5171dddbb9b53e82630ab9bf9f074
+2026-10-21T01:02:22.1029175Z ##[group]Run actions/setup-node@v4
+2026-10-21T01:02:22.1029776Z with:
+2026-10-21T01:02:22.1030186Z   node-version: 22
+2026-10-21T01:02:22.1030620Z   cache: npm
+2026-10-21T01:02:22.1031034Z   always-auth: false
+2026-10-21T01:02:22.1031490Z   check-latest: false
+2026-10-21T01:02:22.1035606Z   token: ***
+2026-10-21T01:02:22.1036045Z ##[endgroup]
+2026-10-21T01:02:22.2695500Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-21T01:02:22.2701013Z (node:2301) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-21T01:02:22.2704871Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-21T01:02:22.2707463Z ##[group]Environment details
+2026-10-21T01:02:24.9485306Z node: v22.23.3
+2026-10-21T01:02:24.9485883Z npm: 10.9.9
+2026-10-21T01:02:24.9486269Z yarn: 1.22.22
+2026-10-21T01:02:24.9487249Z ##[endgroup]
+2026-10-21T01:02:24.9509843Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+2026-10-21T01:02:25.2393366Z /home/runner/.npm
+2026-10-21T01:02:25.3495338Z npm cache is not found
+2026-10-21T01:02:25.3595124Z ##[group]Run npm ci || npm install --legacy-peer-deps
+2026-10-21T01:02:25.3595698Z [36;1mnpm ci || npm install --legacy-peer-deps[0m
+2026-10-21T01:02:25.3828282Z shell: /usr/bin/bash -e {0}
+2026-10-21T01:02:25.3828861Z ##[endgroup]
+2026-10-21T01:02:27.1589312Z npm error code ERESOLVE
+2026-10-21T01:02:27.1590904Z npm error ERESOLVE could not resolve
+2026-10-21T01:02:27.1591560Z npm error
+2026-10-21T01:02:27.1592221Z npm error While resolving: vite@8.3.4
+2026-10-21T01:02:27.1593275Z npm error Found: esbuild@0.25.12
+2026-10-21T01:02:27.1594019Z npm error node_modules/esbuild
+2026-10-21T01:02:27.1594819Z npm error   dev esbuild@"^0.25.0" from the root project
+2026-10-21T01:02:27.1595544Z npm error
+2026-10-21T01:02:27.1596158Z npm error Could not resolve dependency:
+2026-10-21T01:02:27.1597127Z npm error peerOptional esbuild@"^0.27.0 || ^0.28.0" from vite@8.3.4
+2026-10-21T01:02:27.1597927Z npm error node_modules/vite
+2026-10-21T01:02:27.1598725Z npm error   vite@"^8.3.0" from the root project
+2026-10-21T01:02:27.1599753Z npm error   peer vite@"^5.2.0 || ^6 || ^7 || ^8" from @tailwindcss/vite@4.3.3
+2026-10-21T01:02:27.1600672Z npm error   node_modules/@tailwindcss/vite
+2026-10-21T01:02:27.1601578Z npm error     @tailwindcss/vite@"^4.3.3" from the root project
+2026-10-21T01:02:27.1602457Z npm error   1 more (@vitejs/plugin-react)
+2026-10-21T01:02:27.1603315Z npm error
+2026-10-21T01:02:27.1604097Z npm error Conflicting peer dependency: esbuild@0.28.2
+2026-10-21T01:02:27.1604911Z npm error node_modules/esbuild
+2026-10-21T01:02:27.1605800Z npm error   peerOptional esbuild@"^0.27.0 || ^0.28.0" from vite@8.3.4
+2026-10-21T01:02:27.1606610Z npm error   node_modules/vite
+2026-10-21T01:02:27.1607332Z npm error     vite@"^8.3.0" from the root project
+2026-10-21T01:02:27.1608314Z npm error     peer vite@"^5.2.0 || ^6 || ^7 || ^8" from @tailwindcss/vite@4.3.3
+2026-10-21T01:02:27.1609214Z npm error     node_modules/@tailwindcss/vite
+2026-10-21T01:02:27.1610128Z npm error       @tailwindcss/vite@"^4.3.3" from the root project
+2026-10-21T01:02:27.1610951Z npm error     1 more (@vitejs/plugin-react)
+2026-10-21T01:02:27.1611554Z npm error
+2026-10-21T01:02:27.1612240Z npm error Fix the upstream dependency conflict, or retry
+2026-10-21T01:02:27.1613444Z npm error this command with --force or --legacy-peer-deps
+2026-10-21T01:02:27.1614702Z npm error to accept an incorrect (and potentially broken) dependency resolution.
+2026-10-21T01:02:27.1615523Z npm error
+2026-10-21T01:02:27.1615915Z npm error
+2026-10-21T01:02:27.1616399Z npm error For a full report see:
+2026-10-21T01:02:27.1617360Z npm error /home/runner/.npm/_logs/2026-10-21T01_02_25_444Z-eresolve-report.txt
+2026-10-21T01:02:27.1618898Z npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-10-21T01_02_25_444Z-debug-0.log
+2026-10-21T01:02:36.3283704Z 
+2026-10-21T01:02:36.3284618Z added 222 packages, and audited 223 packages in 9s
+2026-10-21T01:02:36.3285811Z 
+2026-10-21T01:02:36.3286158Z 40 packages are looking for funding
+2026-10-21T01:02:36.3286840Z   run `npm fund` for details
+2026-10-21T01:02:36.3296709Z 
+2026-10-21T01:02:36.3297635Z found 0 vulnerabilities
+2026-10-21T01:02:36.3709653Z ##[group]Run node scripts/check-runtime.mjs
+2026-10-21T01:02:36.3710265Z [36;1mnode scripts/check-runtime.mjs[0m
+2026-10-21T01:02:36.3785527Z shell: /usr/bin/bash -e {0}
+2026-10-21T01:02:36.3785995Z ##[endgroup]
+2026-10-21T01:02:36.4178272Z 🔍 === TELEGRAM BOT MANAGER: RUNTIME CHECK ===
+2026-10-21T01:02:36.4179785Z • Node.js Version: v22.23.3
+2026-10-21T01:02:36.4180413Z • Platform:        linux
+2026-10-21T01:02:36.4181098Z • Architecture:    x64
+2026-10-21T01:02:36.4182001Z • Termux Detected: ℹ️ NO (Standard Linux/Desktop/Cloud)
+2026-10-21T01:02:36.4183337Z • RSS Memory:      46 MB
+2026-10-21T01:02:36.4184151Z • Heap Used:       5 MB
+2026-10-21T01:02:36.4184957Z • System Free Mem: 14445 MB / 15984 MB
+2026-10-21T01:02:36.4191311Z • SQLite Engine:   ✅ Native SQLite engine available (Zero external binary dependency)
+2026-10-21T01:02:36.4193231Z ✅ Runtime check completed successfully.
+2026-10-21T01:02:36.4193740Z 
+2026-10-21T01:02:36.4197158Z (node:2484) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-10-21T01:02:36.4198480Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-21T01:02:36.4280600Z ##[group]Run node scripts/setup.mjs
+2026-10-21T01:02:36.4281139Z [36;1mnode scripts/setup.mjs[0m
+2026-10-21T01:02:36.4352438Z shell: /usr/bin/bash -e {0}
+2026-10-21T01:02:36.4352868Z ##[endgroup]
+2026-10-21T01:02:36.4755679Z 🚀 === TELEGRAM BOT MANAGER: SETUP WIZARD ===
+2026-10-21T01:02:36.4757418Z ✅ 1. Node.js v22.23.3 terdeteksi.
+2026-10-21T01:02:36.4758393Z ✅ 2. Direktori data telah tersedia: /home/runner/work/telebot/telebot/data
+2026-10-21T01:02:36.4761873Z ✅ 3. File .env baru dibuat dengan kunci enkripsi AES-256 yang aman.
+2026-10-21T01:02:36.4762841Z ⏳ 4. Menghasilkan Prisma Client...
+2026-10-21T01:02:37.3003692Z Environment variables loaded from .env
+2026-10-21T01:02:37.3022506Z Prisma schema loaded from prisma/schema.prisma
+2026-10-21T01:02:37.6496385Z 
+2026-10-21T01:02:37.6497843Z ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 87ms
+2026-10-21T01:02:37.6498727Z 
+2026-10-21T01:02:37.6499553Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-21T01:02:37.6500387Z 
+2026-10-21T01:02:37.6501668Z Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+2026-10-21T01:02:37.6502604Z 
+2026-10-21T01:02:37.8652532Z ✅ 4. Prisma Client berhasil dihasilkan.
+2026-10-21T01:02:37.8653520Z ⏳ 5. Menerapkan migration database SQLite...
+2026-10-21T01:02:37.8673431Z ❌ Gagal menerapkan migration: no such table: main.Bot
+2026-10-21T01:02:37.8721415Z ##[error]Process completed with exit code 1.
+2026-10-21T01:02:37.8877708Z Post job cleanup.
+2026-10-21T01:02:37.9896358Z [command]/usr/bin/git version
+2026-10-21T01:02:37.9967790Z git version 2.55.0
+2026-10-21T01:02:38.0015745Z Temporarily overriding HOME='/home/runner/work/_temp/e3b5caca-4015-492a-b94e-dad5b670c5b2' before making global git config changes
+2026-10-21T01:02:38.0020311Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-21T01:02:38.0021618Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/telebot/telebot
+2026-10-21T01:02:38.0070737Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-21T01:02:38.0124864Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-21T01:02:38.0440604Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-21T01:02:38.0491633Z http.https://github.com/.extraheader
+2026-10-21T01:02:38.0518340Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-21T01:02:38.0562085Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-21T01:02:38.0965259Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-21T01:02:38.1095168Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-21T01:02:38.1704401Z Cleaning up orphan processes
+2026-10-21T01:02:38.2055941Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
