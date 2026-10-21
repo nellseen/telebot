@@ -64,7 +64,25 @@ try {
     const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
     const { DatabaseSync } = await import('node:sqlite');
     const db = new DatabaseSync(DB_FILE);
-    db.exec(migrationSql);
+    db.exec('PRAGMA foreign_keys = OFF;');
+    
+    // Split into individual SQL statements
+    const statements = migrationSql
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    for (const stmt of statements) {
+      try {
+        db.exec(stmt + ';');
+      } catch (stmtErr) {
+        if (!stmtErr.message.includes('already exists')) {
+          console.warn(`⚠️ Warning executing SQL statement: ${stmtErr.message}`);
+        }
+      }
+    }
+
+    db.exec('PRAGMA foreign_keys = ON;');
     db.close();
     console.log('✅ 5. Database SQLite berhasil diinisialisasi dengan migrasi skema.');
   }

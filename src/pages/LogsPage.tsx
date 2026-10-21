@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BotItem, BotLogItem } from '../types.js';
 import { api } from '../services/api.js';
 import {
@@ -11,6 +12,7 @@ import {
   Clock,
   Shield,
   Loader2,
+  Terminal,
 } from 'lucide-react';
 
 interface Props {
@@ -30,7 +32,6 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
 
   const logsEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch logs whenever selectedBotId or levelFilter changes
   const fetchLogs = async () => {
     setLoading(true);
     try {
@@ -38,16 +39,15 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
         const res = await api.getBotLogs(selectedBotId, {
           level: levelFilter !== 'ALL' ? levelFilter : undefined,
           q: search || undefined,
-          limit: 200,
+          limit: 250,
         });
         setLogs(res.logs || []);
       } else {
-        // If all bots, fetch system logs or first bot's logs
         if (bots.length > 0) {
           const res = await api.getBotLogs(bots[0].id, {
             level: levelFilter !== 'ALL' ? levelFilter : undefined,
             q: search || undefined,
-            limit: 200,
+            limit: 250,
           });
           setLogs(res.logs || []);
         } else {
@@ -65,7 +65,6 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
     fetchLogs();
   }, [selectedBotId, levelFilter]);
 
-  // Auto-scroll when logs change
   useEffect(() => {
     if (autoScroll && logsEndRef.current) {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -85,122 +84,130 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
 
   const filteredLogs = logs.filter((item) => {
     if (levelFilter !== 'ALL' && item.level !== levelFilter) return false;
-    if (search && !item.message.toLowerCase().includes(search.toLowerCase()) && !item.event.toLowerCase().includes(search.toLowerCase())) {
+    if (
+      search &&
+      !item.message.toLowerCase().includes(search.toLowerCase()) &&
+      !item.event.toLowerCase().includes(search.toLowerCase())
+    ) {
       return false;
     }
     return true;
   });
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-800">
-        <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <FileText className="w-5 h-5 text-sky-400" />
-            Live Logs & Telemetri Real-time
-          </h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Streaming pemrosesan update telegram, penanganan error, dan aktivitas runtime bot.
-          </p>
-        </div>
-
-        {/* WebSocket Status Indicator */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
-            <Radio
-              className={`w-3.5 h-3.5 ${
-                wsStatus === 'connected'
-                  ? 'text-emerald-400 animate-pulse'
-                  : wsStatus === 'connecting'
-                  ? 'text-amber-400 animate-spin'
-                  : 'text-rose-400'
-              }`}
-            />
-            <span className="font-medium text-zinc-300">
-              {wsStatus === 'connected' ? 'WebSocket Aktif' : wsStatus === 'connecting' ? 'Menghubungkan...' : 'Terputus'}
-            </span>
+    <div className="space-y-5">
+      {/* Header Banner */}
+      <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-400 text-xs font-semibold border border-sky-500/20 mb-2">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Real-Time WebSocket Streaming</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Live Telemetri & Log Update Bot
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              Pantau jalannya update Telegram, waktu pemrosesan, dan error boundary secara real-time.
+            </p>
           </div>
 
-          <button
-            onClick={fetchLogs}
-            disabled={loading}
-            title="Muat ulang log"
-            className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-xl transition-colors border border-zinc-800 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl glass-card text-xs">
+              <Radio
+                className={`w-3.5 h-3.5 ${
+                  wsStatus === 'connected'
+                    ? 'text-emerald-400 animate-pulse'
+                    : wsStatus === 'connecting'
+                    ? 'text-amber-400 animate-spin'
+                    : 'text-rose-400'
+                }`}
+              />
+              <span className="font-semibold text-white">
+                {wsStatus === 'connected' ? 'WebSocket Online' : wsStatus === 'connecting' ? 'Menghubungkan...' : 'Terputus'}
+              </span>
+            </div>
+
+            <button
+              onClick={fetchLogs}
+              disabled={loading}
+              title="Refresh Log"
+              className="p-3 glass-card rounded-2xl text-zinc-300 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Control Bar: Bot selector, level selector, search, clear */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
+      <div className="glass-panel p-5 rounded-3xl space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Bot Select */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">Pilih Bot</label>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1.5">Pilih Target Bot</label>
             <select
               value={selectedBotId}
               onChange={(e) => setSelectedBotId(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-100 focus:outline-none focus:border-sky-500"
+              className="w-full glass-input px-3.5 py-2.5 rounded-2xl text-xs text-white focus:outline-none"
             >
               {bots.map((b) => (
-                <option key={b.id} value={b.id}>
+                <option key={b.id} value={b.id} className="bg-zinc-950 text-white">
                   {b.name} (@{b.username})
                 </option>
               ))}
-              {bots.length === 0 && <option value="NONE">Tidak ada bot</option>}
+              {bots.length === 0 && <option value="NONE" className="bg-zinc-950 text-white">Belum ada bot</option>}
             </select>
           </div>
 
           {/* Level Filter */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">Tingkat Level</label>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1.5">Filter Level Log</label>
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-100 focus:outline-none focus:border-sky-500"
+              className="w-full glass-input px-3.5 py-2.5 rounded-2xl text-xs text-white focus:outline-none"
             >
-              <option value="ALL">Semua Level (INFO, WARN, ERROR)</option>
-              <option value="INFO">INFO (Update Sukses)</option>
-              <option value="WARN">WARN (Peringatan & Rate Limit)</option>
-              <option value="ERROR">ERROR (Fatal & Konflik)</option>
+              <option value="ALL" className="bg-zinc-950 text-white">Semua Level (INFO, WARN, ERROR)</option>
+              <option value="INFO" className="bg-zinc-950 text-white">INFO (Update Sukses)</option>
+              <option value="WARN" className="bg-zinc-950 text-white">WARN (Peringatan & Rate Limit)</option>
+              <option value="ERROR" className="bg-zinc-950 text-white">ERROR (Fatal & Konflik)</option>
             </select>
           </div>
 
           {/* Search */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">Cari Pesan Log</label>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1.5">Pencarian Keyword</label>
             <div className="relative">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Kata kunci..."
-                className="w-full pl-8 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-sky-500"
+                placeholder="Cari teks pesan, event..."
+                className="w-full glass-input pl-9 pr-3.5 py-2.5 rounded-2xl text-xs text-white placeholder-zinc-500 focus:outline-none"
               />
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5" />
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
             </div>
           </div>
         </div>
 
         {/* Toolbar actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-xs">
+        <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs">
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-zinc-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-zinc-300 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={autoScroll}
                 onChange={(e) => setAutoScroll(e.target.checked)}
-                className="w-3.5 h-3.5 rounded bg-zinc-950 border-zinc-700 text-sky-500"
+                className="w-4 h-4 rounded bg-zinc-950 border-white/20 text-sky-500"
               />
-              <span className="flex items-center gap-1">
-                <ArrowDown className="w-3 h-3" /> Auto-scroll ke bawah
+              <span className="flex items-center gap-1.5 text-xs font-medium">
+                <ArrowDown className="w-3.5 h-3.5 text-sky-400" /> Auto-scroll ke pesan terbaru
               </span>
             </label>
-            <span className="text-zinc-600">|</span>
+            <span className="text-white/20">|</span>
             <span className="text-zinc-400 font-mono text-[11px]">
-              Menampilkan {filteredLogs.length} baris
+              {filteredLogs.length} entri tercatat
             </span>
           </div>
 
@@ -208,42 +215,42 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
             <button
               onClick={handleClearLogs}
               disabled={clearing || logs.length === 0}
-              className="inline-flex items-center gap-1 text-[11px] text-zinc-400 hover:text-rose-400 transition-colors disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-rose-500/10 hover:text-rose-400 text-zinc-400 text-xs font-medium border border-white/[0.06] transition-colors disabled:opacity-40"
             >
-              {clearing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-              <span>Bersihkan Log Bot Ini</span>
+              {clearing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              <span>Bersihkan Log Bot</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Terminal / Log Viewer */}
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 font-mono text-xs overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3 text-[11px] text-zinc-500">
+      {/* Liquid Terminal View */}
+      <div className="glass-panel p-5 rounded-3xl font-mono text-xs overflow-hidden shadow-2xl relative">
+        <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-3 text-[11px] text-zinc-400">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
-            <span className="ml-2 text-zinc-400">telegram-bot-manager.log</span>
+            <span className="ml-2 font-semibold text-zinc-300">live-stream.log</span>
           </div>
-          <div className="flex items-center gap-1 text-zinc-500">
-            <Shield className="w-3 h-3 text-sky-400" />
+          <div className="flex items-center gap-1.5 text-zinc-400">
+            <Shield className="w-3.5 h-3.5 text-sky-400" />
             <span>Kredensial disanitasi otomatis</span>
           </div>
         </div>
 
-        <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-1">
+        <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
           {filteredLogs.length === 0 ? (
-            <div className="py-16 text-center text-zinc-600">
-              Tidak ada log yang cocok. Mulai bot atau kirim pesan di Telegram untuk melihat log realtime.
+            <div className="py-20 text-center text-zinc-500">
+              Tidak ada log yang cocok. Mulai bot atau kirim pesan di Telegram untuk melihat log streaming realtime.
             </div>
           ) : (
             filteredLogs.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start gap-2.5 py-1 px-2 rounded-lg hover:bg-zinc-900/60 transition-colors leading-relaxed"
+                className="flex items-start gap-2.5 py-1.5 px-2.5 rounded-xl hover:bg-white/[0.04] transition-colors leading-relaxed"
               >
-                <span className="text-zinc-600 text-[10px] shrink-0 flex items-center gap-1 pt-0.5">
+                <span className="text-zinc-500 text-[10px] shrink-0 flex items-center gap-1 pt-0.5 font-mono">
                   <Clock className="w-2.5 h-2.5" />
                   {new Date(item.createdAt).toLocaleTimeString()}
                 </span>
@@ -251,16 +258,16 @@ export function LogsPage({ bots, selectedBotId: initialBotId, wsStatus }: Props)
                 <span
                   className={`text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0 ${
                     item.level === 'ERROR'
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                       : item.level === 'WARN'
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-zinc-800 text-sky-400 border border-zinc-700'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'bg-white/[0.08] text-sky-300 border border-white/[0.06]'
                   }`}
                 >
                   {item.level}
                 </span>
 
-                <span className="text-zinc-400 shrink-0 text-[11px] font-semibold">[{item.event}]</span>
+                <span className="text-zinc-300 shrink-0 text-[11px] font-semibold">[{item.event}]</span>
 
                 <span
                   className={`break-all ${

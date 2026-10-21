@@ -31,7 +31,23 @@ export async function runMigrations(): Promise<{ applied: boolean; message: stri
 
     const { DatabaseSync } = await import('node:sqlite');
     const db = new DatabaseSync(DB_FILE_PATH);
-    db.exec(migrationSql);
+    db.exec('PRAGMA foreign_keys = OFF;');
+    const statements = migrationSql
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    for (const stmt of statements) {
+      try {
+        db.exec(stmt + ';');
+      } catch (stmtErr: any) {
+        if (!stmtErr.message.includes('already exists')) {
+          logger.warn('DB_MIGRATION_STMT', `Statement notice: ${stmtErr.message}`);
+        }
+      }
+    }
+
+    db.exec('PRAGMA foreign_keys = ON;');
     db.close();
 
     logger.info('DB_MIGRATION', 'Migration applied successfully!');

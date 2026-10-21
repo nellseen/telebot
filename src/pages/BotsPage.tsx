@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BotItem } from '../types.js';
 import { BotCard } from '../components/BotCard.js';
 import { ConfirmDialog } from '../components/ConfirmDialog.js';
@@ -63,32 +64,37 @@ export function BotsPage({
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-800">
-        <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Bot className="w-5 h-5 text-sky-400" />
-            Manajemen Bot Telegram
-          </h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Kelola status runtime, konfigurasi pesan, auto-start, dan template untuk setiap bot.
-          </p>
-        </div>
+      <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-400 text-xs font-semibold border border-sky-500/20 mb-2">
+              <Bot className="w-3.5 h-3.5" />
+              <span>Multi-Bot Fleet Management</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Daftar Bot Telegram
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              Pantau status polling aktif, operasikan tombol lifecycle, dan atur sambutan untuk setiap bot.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={onRefresh}
-            title="Refresh Status"
-            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-xl transition-colors border border-zinc-800"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onAddBotClick}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs shadow-lg shadow-sky-600/25 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Bot</span>
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={onRefresh}
+              title="Refresh Status"
+              className="p-3 glass-card rounded-2xl text-zinc-300 hover:text-white transition-all active:scale-95"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onAddBotClick}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white font-semibold text-xs shadow-xl shadow-sky-500/25 transition-all active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Bot Baru</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -100,23 +106,23 @@ export function BotsPage({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari berdasarkan nama, username..."
-            className="w-full pl-9 pr-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition-colors"
+            placeholder="Cari nama atau @username bot..."
+            className="w-full glass-input pl-9 pr-3.5 py-2.5 rounded-2xl text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
         </div>
 
         {/* Status Filters */}
-        <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800 w-full sm:w-auto overflow-x-auto">
-          <Filter className="w-3.5 h-3.5 text-zinc-500 ml-2 mr-1 hidden sm:inline" />
+        <div className="flex items-center gap-1 glass-panel p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto">
+          <Filter className="w-3.5 h-3.5 text-zinc-400 ml-2 mr-1 hidden sm:inline" />
           {['ALL', 'RUNNING', 'STOPPED', 'ERROR'].map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
+              className={`px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all whitespace-nowrap ${
                 statusFilter === status
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-sky-500/20 text-white border border-sky-500/30 shadow-sm'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               {status === 'ALL'
@@ -133,43 +139,45 @@ export function BotsPage({
 
       {/* Bot Grid / Empty State */}
       {filteredBots.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl bg-zinc-900/50 border border-zinc-800/80 p-8">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 mx-auto flex items-center justify-center mb-3">
-            <Bot className="w-6 h-6" />
+        <div className="py-20 text-center rounded-3xl glass-panel p-8">
+          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-zinc-400 mx-auto flex items-center justify-center mb-4">
+            <Bot className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-semibold text-zinc-200">
-            {bots.length === 0 ? 'Belum Ada Bot Terdaftar' : 'Tidak Ada Bot yang Sesuai Filter'}
+          <h3 className="text-base font-semibold text-white">
+            {bots.length === 0 ? 'Belum Ada Bot yang Didaftarkan' : 'Tidak Ada Bot Sesuai Kriteria'}
           </h3>
-          <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1 mb-5">
+          <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1 mb-6">
             {bots.length === 0
-              ? 'Tambahkan bot Telegram pertama Anda dengan token dari @BotFather untuk mulai menjalankan template otomatis.'
-              : 'Coba ubah kata kunci pencarian atau ganti filter status.'}
+              ? 'Dapatkan token dari @BotFather di Telegram dan daftarkan di sini untuk mulai menjalankan bot secara mandiri.'
+              : 'Coba ubah kata kunci pencarian atau ganti filter status di atas.'}
           </p>
           {bots.length === 0 && (
             <button
               onClick={onAddBotClick}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium shadow-lg shadow-sky-600/25 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xl shadow-sky-600/20 transition-all"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Daftarkan Bot Sekarang</span>
+              <span>Tambah Bot Pertama Anda</span>
             </button>
           )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredBots.map((bot) => (
-            <BotCard
-              key={bot.id}
-              bot={bot}
-              onStart={onStartBot}
-              onStop={onStopBot}
-              onRestart={onRestartBot}
-              onOpenSettings={onOpenSettings}
-              onOpenLogs={onOpenLogs}
-              onDelete={(b) => setBotToDelete(b)}
-              onValidateToken={onValidateToken}
-            />
-          ))}
+          <AnimatePresence>
+            {filteredBots.map((bot) => (
+              <BotCard
+                key={bot.id}
+                bot={bot}
+                onStart={onStartBot}
+                onStop={onStopBot}
+                onRestart={onRestartBot}
+                onOpenSettings={onOpenSettings}
+                onOpenLogs={onOpenLogs}
+                onDelete={(b) => setBotToDelete(b)}
+                onValidateToken={onValidateToken}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
@@ -177,7 +185,7 @@ export function BotsPage({
       <ConfirmDialog
         isOpen={botToDelete !== null}
         title={`Hapus Bot "${botToDelete?.name}"?`}
-        message={`Tindakan ini akan menghentikan bot (@${botToDelete?.username}) jika sedang berjalan dan menghapus seluruh konfigurasi serta riwayat log dari database SQLite. Tindakan ini tidak dapat dibatalkan.`}
+        message={`Tindakan ini akan menghentikan proses polling bot (@${botToDelete?.username}) dan menghapus seluruh konfigurasi serta riwayat log dari database SQLite. Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Ya, Hapus Bot"
         cancelLabel="Batal"
         isDestructive={true}
