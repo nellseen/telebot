@@ -1,0 +1,100 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  bots         Bot[]
+  auditLogs    AuditLog[]
+}
+
+model Bot {
+  id              String      @id @default(cuid())
+  ownerId         String
+  name            String
+  telegramBotId   String      @unique
+  username        String
+  encryptedToken  String
+  tokenKeyVersion Int         @default(1)
+  status          String      @default("STOPPED")
+  autoStart       Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  config          BotConfig?
+  runtime         BotRuntime?
+  logs            BotLog[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model BotConfig {
+  id                String   @id @default(cuid())
+  botId             String   @unique
+  welcomeEnabled    Boolean  @default(true)
+  welcomeMessage    String   @default("Halo! Selamat datang di bot ini. Gunakan /help untuk melihat menu bantuan.")
+  helpEnabled       Boolean  @default(true)
+  inlineMenuEnabled Boolean  @default(true)
+  rateLimitEnabled  Boolean  @default(true)
+  configurationJson String   @default("{}")
+  updatedAt         DateTime @updatedAt
+
+  bot               Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model BotRuntime {
+  id              String    @id @default(cuid())
+  botId           String    @unique
+  desiredState    String    @default("STOPPED")
+  observedState   String    @default("STOPPED")
+  workerId        String?
+  startedAt       DateTime?
+  stoppedAt       DateTime?
+  lastHeartbeatAt DateTime?
+  lastErrorCode   String?
+  updatedAt       DateTime  @updatedAt
+
+  bot             Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model BotLog {
+  id           String   @id @default(cuid())
+  botId        String
+  level        String   @default("INFO")
+  event        String
+  message      String
+  metadataJson String   @default("{}")
+  createdAt    DateTime @default(now())
+
+  bot          Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@index([botId, createdAt])
+  @@index([level])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  action       String
+  resourceType String
+  resourceId   String
+  metadataJson String   @default("{}")
+  createdAt    DateTime @default(now())
+
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}

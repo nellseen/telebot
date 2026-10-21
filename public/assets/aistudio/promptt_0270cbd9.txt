@@ -1,0 +1,1108 @@
+Full-Stack Dashboard + Multi-Bot Runtime + SQLite + Prisma + Termux Android
+
+1. PERAN DAN MISI
+
+Bertindak sebagai Senior Full-Stack Engineer, Software Architect, Node.js Runtime Engineer, Telegram Bot Developer, Database Engineer, Security Engineer, QA Engineer, dan DevOps Engineer.
+
+Bangun aplikasi full-stack bernama Telegram Bot Manager, yaitu panel web untuk membuat, menjalankan, menghentikan, memantau, dan mengonfigurasi beberapa bot Telegram melalui satu dashboard.
+
+Project harus benar-benar berfungsi, bukan sekadar UI mockup atau prototype.
+
+Pengguna harus bisa:
+
+1. Membuka dashboard melalui browser.
+2. Login dengan aman.
+3. Menambahkan bot Telegram menggunakan nama dan token.
+4. Memvalidasi token melalui Telegram Bot API.
+5. Menjalankan bot menggunakan template engine bawaan.
+6. Menghentikan, memulai ulang, dan menghapus bot.
+7. Memantau status runtime dan log.
+8. Mengaktifkan atau menonaktifkan fitur bot dari dashboard.
+9. Mempertahankan data setelah aplikasi atau perangkat direstart.
+
+Aturan utama: aplikasi harus kompatibel dengan Termux Android dan tidak boleh mewajibkan Docker, PostgreSQL, Redis, atau layanan database eksternal.
+
+Gunakan SQLite sebagai database utama dan Prisma sebagai ORM.
+
+Jangan hanya membuat rancangan. Implementasikan seluruh source code, konfigurasi, database bootstrap, testing, dokumentasi, dan workflow CI yang diperlukan.
+
+---
+
+2. STACK TEKNOLOGI
+
+Gunakan stack berikut:
+
+Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
+- TanStack Query
+- Zod untuk validasi data yang relevan
+- Lucide icons
+- WebSocket untuk pembaruan status dan log secara real-time
+
+Backend
+
+- Node.js
+- TypeScript
+- Fastify
+- REST API
+- WebSocket melalui plugin Fastify yang sesuai
+- Zod untuk validasi request
+- Pino untuk structured logging dengan redaction
+- Session atau autentikasi berbasis cookie yang aman
+
+Telegram
+
+- grammY sebagai Telegram Bot Framework
+- Telegram Bot API
+- Long polling sebagai metode koneksi default
+- Inline keyboard dan callback query
+- Middleware untuk logging, error handling, serta rate limiting yang sesuai
+
+Database
+
+- SQLite
+- Prisma ORM
+- Prisma Client
+- SQLite database file lokal
+- Migration versioned yang disertakan di repository
+
+Development tooling
+
+- npm workspaces
+- TypeScript strict mode
+- ESLint
+- Prettier
+- Vitest
+- Playwright
+- GitHub Actions
+
+Gunakan versi dependency stabil yang kompatibel satu sama lain. Periksa dokumentasi resmi dan kompatibilitas Prisma dengan platform Android/Termux sebelum menentukan versi final.
+
+Jangan mengasumsikan binary Prisma standar selalu berjalan di Android hanya karena Node.js berhasil dijalankan.
+
+---
+
+3. PERSYARATAN KHUSUS TERMUX
+
+Project akan dikembangkan dan dijalankan pada Android melalui Termux.
+
+Larangan
+
+- Jangan mewajibkan Docker atau Docker Compose.
+- Jangan mewajibkan PostgreSQL atau database server eksternal.
+- Jangan mewajibkan Redis.
+- Jangan menggunakan systemd.
+- Jangan mengasumsikan direktori Linux standar seperti "/var/lib".
+- Jangan mengandalkan PM2 daemon sebagai satu-satunya mekanisme startup.
+- Jangan menggunakan binary yang tidak kompatibel dengan arsitektur Android tanpa pemeriksaan.
+- Jangan mengharuskan pengguna mengedit source code untuk menambahkan bot.
+
+Target pengalaman pengguna
+
+Instalasi dependency pertama kali:
+
+npm install
+
+Menyiapkan database dan memeriksa runtime:
+
+npm run setup
+
+Menjalankan aplikasi pada penggunaan berikutnya:
+
+npm run dev
+
+Setelah setup pertama berhasil, "npm run dev" harus otomatis:
+
+1. Memeriksa environment.
+2. Memastikan direktori data tersedia.
+3. Membuat file SQLite jika belum tersedia.
+4. Memastikan database dapat diakses.
+5. Memeriksa status migration.
+6. Memulai backend dan frontend.
+7. Menjalankan bot supervisor.
+8. Memulihkan bot yang dikonfigurasi untuk auto-start.
+9. Menampilkan URL dashboard dan informasi diagnostik.
+
+"npm run dev" tidak boleh menjalankan ulang proses setup destruktif.
+
+Instalasi paket
+
+Sediakan pemeriksaan runtime yang jelas. Jika ada dependency native yang tidak kompatibel, tampilkan pesan yang menyebut dependency, versi runtime, arsitektur, serta langkah perbaikan yang relevan.
+
+Jangan diam-diam mengunduh atau menjalankan executable tidak tepercaya.
+
+Jika memungkinkan, sediakan skrip bootstrap Termux opsional yang memeriksa ketersediaan Node.js dan toolchain yang dibutuhkan. Skrip tidak boleh mengasumsikan semua paket Android tersedia dengan nama atau versi yang sama.
+
+---
+
+4. DATABASE SQLITE + PRISMA
+
+Gunakan SQLite sebagai penyimpanan persisten utama.
+
+Contoh lokasi file:
+
+data/
+├── .gitkeep
+└── app.db
+
+Path database harus dapat dikonfigurasi melalui environment dan menggunakan path absolut saat diberikan kepada Prisma.
+
+Jangan menaruh database di direktori temporary.
+
+Bootstrap database
+
+Implementasikan mekanisme idempotent untuk:
+
+- Membuat direktori data.
+- Membuat database apabila belum ada.
+- Menghasilkan Prisma Client.
+- Memeriksa migration yang tersedia.
+- Menjalankan migration yang belum diterapkan menggunakan workflow yang aman.
+- Memverifikasi koneksi database.
+- Memeriksa versi schema.
+- Menghentikan startup jika migration gagal.
+- Memberikan pesan error yang dapat ditindaklanjuti.
+
+Gunakan migration versioned melalui "prisma migrate deploy" untuk menjalankan migration yang sudah dibuat dan diuji.
+
+Jangan menjalankan "prisma migrate reset" secara otomatis.
+
+Jangan menggunakan "prisma db push" sebagai mekanisme normal untuk memperbarui database produksi.
+
+Jangan membuat schema menggunakan manipulasi SQL ad hoc setiap kali server dimulai.
+
+Pastikan workflow development untuk membuat migration didokumentasikan secara terpisah dari workflow runtime.
+
+Ketahanan database
+
+- Pertahankan database saat server restart.
+- Jangan menghapus database saat melakukan rebuild frontend.
+- Jangan menghapus database saat migration gagal.
+- Sediakan backup database melalui mekanisme SQLite yang aman.
+- Pertimbangkan penggunaan SQLite Online Backup API atau pendekatan backup konsisten lainnya apabila tersedia melalui library yang dipilih.
+- Sediakan export dan restore dengan validasi integritas.
+- Dokumentasikan bahwa database SQLite adalah file lokal dan cocok untuk deployment satu perangkat atau satu instance aplikasi.
+
+Jangan menyatakan backup berhasil sebelum file hasil backup benar-benar berhasil dibuat dan diverifikasi.
+
+Model data minimal
+
+Buat schema Prisma untuk model berikut:
+
+User
+
+- id
+- username
+- passwordHash
+- createdAt
+- updatedAt
+
+Bot
+
+- id
+- ownerId
+- name
+- telegramBotId
+- username
+- encryptedToken
+- tokenKeyVersion
+- status
+- autoStart
+- createdAt
+- updatedAt
+
+BotConfig
+
+- id
+- botId
+- welcomeEnabled
+- welcomeMessage
+- helpEnabled
+- inlineMenuEnabled
+- rateLimitEnabled
+- configurationJson
+- updatedAt
+
+BotRuntime
+
+- id
+- botId
+- desiredState
+- observedState
+- workerId
+- startedAt
+- stoppedAt
+- lastHeartbeatAt
+- lastErrorCode
+- updatedAt
+
+BotLog
+
+- id
+- botId
+- level
+- event
+- message
+- metadataJson
+- createdAt
+
+AuditLog
+
+- id
+- userId
+- action
+- resourceType
+- resourceId
+- metadataJson
+- createdAt
+
+Tambahkan indeks, foreign key, unique constraint, aturan penghapusan, dan validasi sesuai kebutuhan.
+
+Token tidak boleh disimpan dalam kolom plaintext.
+
+Jangan menyimpan seluruh log tanpa batas. Implementasikan retensi log dan pembatasan ukuran metadata.
+
+Hindari penggunaan fitur Prisma yang memerlukan binary engine tidak kompatibel dengan Termux. Tentukan strategi client dan adapter berdasarkan dokumentasi resmi serta hasil pengujian pada Android.
+
+Jika adapter SQLite dipilih, pastikan adapter dan driver-nya benar-benar kompatibel dengan Node.js pada lingkungan Termux yang ditargetkan.
+
+---
+
+5. ARSITEKTUR MONOREPO
+
+Gunakan struktur modular yang jelas:
+
+telegram-bot-manager/
+├── apps/
+│   ├── web/
+│   │   └── src/
+│   │       ├── app/
+│   │       ├── components/
+│   │       ├── layouts/
+│   │       ├── pages/
+│   │       ├── features/
+│   │       │   ├── auth/
+│   │       │   ├── dashboard/
+│   │       │   ├── bots/
+│   │       │   ├── bot-settings/
+│   │       │   ├── logs/
+│   │       │   └── system/
+│   │       ├── hooks/
+│   │       ├── lib/
+│   │       └── types/
+│   │
+│   ├── api/
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── server.ts
+│   │       ├── routes/
+│   │       ├── controllers/
+│   │       ├── services/
+│   │       ├── middleware/
+│   │       ├── auth/
+│   │       ├── security/
+│   │       ├── websocket/
+│   │       └── errors/
+│   │
+│   ├── supervisor/
+│   │   └── src/
+│   │       ├── supervisor.ts
+│   │       ├── lifecycle.ts
+│   │       ├── registry.ts
+│   │       ├── recovery.ts
+│   │       └── health-monitor.ts
+│   │
+│   └── bot-worker/
+│       └── src/
+│           ├── bootstrap.ts
+│           ├── bot-factory.ts
+│           ├── commands/
+│           ├── handlers/
+│           ├── keyboards/
+│           ├── middleware/
+│           └── errors/
+│
+├── packages/
+│   ├── database/
+│   ├── bot-core/
+│   ├── shared/
+│   ├── validation/
+│   ├── config/
+│   └── logger/
+│
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+│
+├── scripts/
+│   ├── setup.mjs
+│   ├── dev.mjs
+│   ├── check-runtime.mjs
+│   ├── ensure-data-dir.mjs
+│   ├── migrate.mjs
+│   ├── doctor.mjs
+│   └── backup.mjs
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+├── data/
+│   └── .gitkeep
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── .env.example
+├── .gitignore
+├── package.json
+├── tsconfig.json
+├── README.md
+└── LICENSE
+
+Struktur tersebut adalah panduan arsitektur. Sesuaikan implementasi bila ada persyaratan kompatibilitas Termux, tetapi pertahankan pemisahan tanggung jawab.
+
+Jangan membuat banyak file kosong hanya untuk terlihat modular.
+
+Setiap file yang dibuat harus memiliki implementasi yang benar-benar digunakan atau alasan arsitektur yang jelas.
+
+---
+
+6. DASHBOARD UI/UX
+
+Bangun dashboard modern, responsif, ringan, dan nyaman digunakan dari browser Android.
+
+Gunakan bahasa Indonesia sebagai bahasa UI default.
+
+Halaman login
+
+- Username dan password.
+- Validasi input.
+- Pesan error yang aman.
+- Session yang aman.
+- Logout.
+- Perlindungan terhadap brute force.
+- Setup akun administrator pertama melalui alur bootstrap yang aman.
+
+Jangan menyediakan kredensial default permanen seperti "admin/admin".
+
+Dashboard utama
+
+Tampilkan:
+
+- Total bot terdaftar.
+- Jumlah bot aktif.
+- Jumlah bot berhenti.
+- Jumlah bot yang mengalami error.
+- Total update yang diproses jika metrik tersebut benar-benar dikumpulkan.
+- Status database.
+- Uptime aplikasi.
+- Penggunaan memori proses jika tersedia secara akurat.
+- Aktivitas terbaru.
+
+Jangan menampilkan angka statistik palsu atau placeholder sebagai data nyata setelah dashboard digunakan.
+
+Halaman daftar bot
+
+Setiap bot memiliki kartu atau baris berisi:
+
+- Nama bot.
+- Username Telegram.
+- ID bot.
+- Status runtime.
+- Waktu mulai.
+- Uptime.
+- Error terakhir yang sudah disanitasi.
+- Tombol Start.
+- Tombol Stop.
+- Tombol Restart.
+- Tombol Settings.
+- Tombol Logs.
+- Tombol Delete.
+
+Tombol harus memanggil backend nyata dan menampilkan hasil aksi.
+
+Form tambah bot
+
+Field wajib:
+
+- Nama bot.
+- Token Telegram.
+
+Alur:
+
+1. Validasi input.
+2. Kirim token melalui HTTPS pada deployment jaringan.
+3. Verifikasi token menggunakan Telegram Bot API.
+4. Ambil identitas bot yang terverifikasi.
+5. Simpan token secara terenkripsi.
+6. Buat konfigurasi default.
+7. Buat status runtime awal.
+8. Tampilkan bot dalam daftar.
+
+Token tidak boleh dicatat ke browser console atau server log.
+
+Jika verifikasi gagal, jangan menyimpan bot dalam keadaan setengah jadi.
+
+Halaman pengaturan bot
+
+Sediakan pengaturan:
+
+- Nama bot.
+- Pesan sambutan.
+- Aktivasi command.
+- Aktivasi inline menu.
+- Rate limiting.
+- Auto-start.
+- Preferensi notifikasi error.
+- Pengaturan lain yang sudah benar-benar diimplementasikan.
+
+Perubahan konfigurasi harus divalidasi dan disimpan secara persisten.
+
+Halaman log
+
+- Filter level log.
+- Filter waktu.
+- Pencarian.
+- Pagination.
+- Pembaruan real-time.
+- Indikator koneksi WebSocket.
+- Tombol clear hanya untuk log yang memang diizinkan dihapus.
+- Masking data sensitif.
+
+Jangan pernah menampilkan token bot dalam log.
+
+---
+
+7. TEMPLATE BOT TELEGRAM
+
+Semua bot menggunakan template engine bersama.
+
+Penambahan bot hanya membutuhkan konfigurasi dan token baru, bukan salinan source code.
+
+Command bawaan
+
+Implementasikan:
+
+- "/start"
+- "/help"
+- "/id"
+- "/ping"
+- "/about"
+- "/menu"
+
+"/start"
+
+- Kirim pesan sambutan.
+- Tampilkan inline menu jika diaktifkan.
+- Gunakan pesan sambutan dari konfigurasi bot.
+- Tangani kegagalan Telegram API.
+
+"/help"
+
+- Menampilkan daftar command yang aktif.
+- Menggunakan deskripsi command yang terdaftar di command registry.
+- Tidak menampilkan command yang dinonaktifkan.
+
+"/id"
+
+- Menampilkan ID pengguna.
+- Menampilkan ID chat sesuai konteks.
+- Jangan membocorkan informasi sensitif.
+
+"/ping"
+
+- Memberikan respons bahwa bot aktif.
+- Gunakan pengukuran latensi yang didefinisikan secara jelas.
+- Jangan mengklaim mengukur latency Telegram secara akurat jika yang diukur hanya waktu pemrosesan lokal.
+
+"/about"
+
+- Menampilkan informasi bot.
+- Menggunakan konfigurasi yang relevan.
+- Jangan membocorkan versi dependency atau konfigurasi rahasia.
+
+"/menu"
+
+Gunakan inline keyboard dengan callback query yang valid.
+
+Contoh menu:
+
+- Beranda.
+- Bantuan.
+- Status.
+- Informasi.
+- Kembali.
+
+Setiap callback harus diperiksa dan dijawab menggunakan mekanisme Telegram yang sesuai.
+
+Middleware
+
+Implementasikan:
+
+- Global error handler.
+- Structured logging.
+- Update deduplication bila diperlukan.
+- Rate limiting per pengguna atau chat.
+- Pemeriksaan akses untuk fitur terbatas.
+- Penanganan callback query.
+- Penanganan update yang tidak dikenal.
+
+Jangan menganggap seluruh pesan pengguna adalah input tepercaya.
+
+---
+
+8. BOT SUPERVISOR DAN MULTI-BOT RUNTIME
+
+Supervisor bertanggung jawab mengatur lifecycle setiap bot.
+
+State machine
+
+Gunakan status:
+
+- "STOPPED"
+- "STARTING"
+- "RUNNING"
+- "STOPPING"
+- "RESTARTING"
+- "ERROR"
+
+Pisahkan desired state dan observed state.
+
+Desired state menunjukkan keadaan yang diminta pengguna. Observed state menunjukkan keadaan yang benar-benar diamati supervisor.
+
+Operasi runtime
+
+Implementasikan:
+
+- Start.
+- Stop.
+- Restart.
+- Auto-start.
+- Graceful shutdown.
+- Health monitoring.
+- Heartbeat.
+- Error recovery.
+- Retry dengan exponential backoff dan jitter.
+- Pembatasan percobaan restart.
+- Pencegahan worker ganda.
+- Penanganan token invalid.
+- Pemulihan setelah server restart.
+
+Long polling
+
+Gunakan grammY long polling sebagai default.
+
+Setiap bot harus memiliki lifecycle polling sendiri.
+
+Tangani konflik "getUpdates" dengan baik.
+
+Pastikan satu token tidak dijalankan oleh dua worker bersamaan dalam satu instance aplikasi.
+
+Jika terjadi konflik polling, tampilkan status error yang dapat dipahami dan jangan terus melakukan restart tanpa batas.
+
+Isolasi runtime
+
+Jangan menyimpan seluruh worker secara permanen dalam satu array global tanpa cleanup.
+
+Gunakan registry runtime dengan identitas yang stabil, lifecycle yang jelas, dan cleanup yang deterministik.
+
+Untuk Termux, prioritaskan worker dalam satu proses Node.js terlebih dahulu apabila terbukti lebih kompatibel.
+
+Jika worker terpisah melalui child process digunakan, implementasikan:
+
+- Penghentian proses secara benar.
+- Penanganan sinyal.
+- Cleanup resource.
+- Pengawasan proses.
+- Pemeriksaan stale process.
+- Validasi kompatibilitas runtime.
+
+Jangan mengklaim crash isolation penuh jika seluruh worker masih berada dalam satu proses.
+
+Jangan membiarkan worker mematikan proses API tanpa sengaja.
+
+Batas platform
+
+Jelaskan bahwa Android dapat membatasi proses latar belakang. Dokumentasikan bahwa aplikasi harus tetap berjalan di foreground atau menggunakan mekanisme Termux yang sesuai apabila pengguna ingin menjaga layanan aktif lebih lama.
+
+Jangan menjanjikan bot akan terus hidup jika Android atau sistem operasi menghentikan prosesnya.
+
+---
+
+9. KEAMANAN TOKEN DAN AUTENTIKASI
+
+Token bot adalah rahasia berprivilege tinggi.
+
+Implementasikan:
+
+- Enkripsi token menggunakan AES-256-GCM atau mekanisme authenticated encryption yang setara.
+- Kunci enkripsi yang berasal dari secret eksternal, bukan disimpan bersama ciphertext dalam database.
+- Penyimpanan kunci di environment lokal yang dilindungi atau mekanisme secret storage yang sesuai.
+- Pemisahan konfigurasi rahasia dari konfigurasi umum.
+- Rotasi kunci yang memiliki prosedur eksplisit.
+- Masking token pada seluruh output.
+- Penghapusan token yang aman dari alur penghapusan bot.
+- Validasi session.
+- Cookie "HttpOnly", "SameSite" dan "Secure" sesuai deployment.
+- CSRF protection sesuai mekanisme autentikasi.
+- Rate limiting.
+- Input validation.
+- Audit log.
+- CORS dengan origin yang diizinkan secara eksplisit.
+- Proteksi endpoint administratif.
+- Pembatasan akses berdasarkan pemilik bot.
+
+Jangan menggunakan token sebagai parameter URL.
+
+Jangan menyimpan token di localStorage browser.
+
+Jangan memasukkan ".env", database, backup, secret, atau log privat ke Git.
+
+Jika kunci enkripsi hilang, sistem harus menjelaskan bahwa token yang tersimpan mungkin tidak bisa didekripsi. Jangan berpura-pura memulihkannya.
+
+Jika aplikasi mendukung satu administrator saja pada versi pertama, tetap implementasikan autentikasi dan jangan membuat endpoint administratif publik tanpa proteksi.
+
+---
+
+10. REST API
+
+Implementasikan API dengan validasi dan error handling konsisten.
+
+Authentication
+
+- "POST /api/auth/login"
+- "POST /api/auth/logout"
+- "GET /api/auth/session"
+- "POST /api/auth/bootstrap"
+
+Bootstrap administrator hanya boleh dilakukan jika belum ada akun dan harus memiliki perlindungan terhadap akses dari pihak lain.
+
+Bot management
+
+- "GET /api/bots"
+- "POST /api/bots"
+- "GET /api/bots/:id"
+- "PATCH /api/bots/:id"
+- "DELETE /api/bots/:id"
+- "POST /api/bots/:id/validate-token"
+
+Runtime
+
+- "POST /api/bots/:id/start"
+- "POST /api/bots/:id/stop"
+- "POST /api/bots/:id/restart"
+- "GET /api/bots/:id/status"
+- "GET /api/bots/:id/logs"
+
+Configuration
+
+- "GET /api/bots/:id/config"
+- "PATCH /api/bots/:id/config"
+
+System
+
+- "GET /api/health"
+- "GET /api/ready"
+- "GET /api/system/info"
+- "GET /api/system/logs"
+- "POST /api/system/backup"
+
+Gunakan kode HTTP yang tepat.
+
+Jangan mengembalikan stack trace, token, encryption key, atau detail internal sensitif kepada client.
+
+Endpoint health tidak boleh membocorkan konfigurasi rahasia.
+
+---
+
+11. REAL-TIME DASHBOARD
+
+Gunakan WebSocket untuk:
+
+- Perubahan status bot.
+- Log terbaru.
+- Error runtime.
+- Uptime dan heartbeat.
+- Status koneksi.
+- Notifikasi aksi start/stop/restart.
+
+Implementasikan:
+
+- Reconnect dengan backoff.
+- Autentikasi koneksi.
+- Pembatasan pesan.
+- Validasi event.
+- Cleanup listener.
+- Pembatasan frekuensi event.
+- Sinkronisasi ulang melalui REST API setelah reconnect.
+
+WebSocket hanya menjadi jalur komunikasi UI. State utama tetap berasal dari backend dan database, bukan state browser.
+
+Jangan mengirim token bot melalui WebSocket.
+
+---
+
+12. STARTUP ORCHESTRATION
+
+Buat startup manager yang aman dan idempotent.
+
+"npm run setup"
+
+Fungsi:
+
+- Memeriksa Node.js dan npm.
+- Memeriksa kompatibilitas Termux.
+- Menyiapkan direktori data.
+- Membuat environment development jika belum ada.
+- Menyiapkan kunci enkripsi jika belum ada.
+- Menjalankan Prisma Client generation.
+- Menjalankan migration yang tersedia.
+- Memeriksa koneksi SQLite.
+- Melakukan smoke test database.
+- Menampilkan ringkasan hasil setup.
+
+Setup tidak boleh menimpa secret yang sudah ada.
+
+"npm run dev"
+
+Fungsi:
+
+1. Memeriksa environment.
+2. Memastikan direktori database tersedia.
+3. Memeriksa Prisma Client.
+4. Memverifikasi koneksi database.
+5. Memastikan migration sudah diterapkan.
+6. Menjalankan supervisor.
+7. Menjalankan API.
+8. Menjalankan frontend.
+9. Menampilkan URL lokal dashboard.
+10. Menangani Ctrl+C dengan graceful shutdown.
+
+Hindari race condition saat dua proses bootstrap mencoba menjalankan migration secara bersamaan.
+
+Gunakan satu entrypoint orchestration yang mengendalikan urutan startup.
+
+Jangan membuat frontend, API, dan supervisor menjalankan bootstrap database secara independen.
+
+Jika satu komponen gagal memulai, hentikan komponen lain dengan benar dan berikan exit code yang tidak nol.
+
+Contoh scripts package.json
+
+{
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "doctor": "node scripts/doctor.mjs",
+    "db:backup": "node scripts/backup.mjs"
+  }
+}
+
+Contoh tersebut adalah target scripts. Sesuaikan command workspace dan TypeScript agar benar-benar berjalan dalam konfigurasi final; jangan menyalin command yang menimbulkan pemanggilan script rekursif.
+
+---
+
+13. PENGUJIAN
+
+Unit tests
+
+Uji:
+
+- Command registry.
+- Input validation.
+- Token encryption dan decryption.
+- State machine.
+- Retry policy.
+- Runtime cleanup.
+- Config parser.
+- Error normalization.
+- Log redaction.
+
+Database integration tests
+
+Uji:
+
+- Pembuatan database baru.
+- Pembuatan akun.
+- CRUD bot.
+- Unique constraint.
+- Foreign key.
+- Migration.
+- Konfigurasi bot.
+- Audit log.
+- Backup dan restore.
+- Pemulihan setelah restart.
+
+Gunakan database pengujian yang terpisah dari database development.
+
+Jangan pernah menjalankan test destructive terhadap database pengguna.
+
+Telegram integration tests
+
+Gunakan mock Telegram API untuk:
+
+- Token invalid.
+- Koneksi gagal.
+- Timeout.
+- Flood control.
+- Konflik polling.
+- Update masuk.
+- Callback query.
+- Worker crash.
+
+Sediakan smoke test opsional menggunakan bot uji nyata yang dikonfigurasi melalui secret environment.
+
+Jangan mewajibkan token nyata untuk menjalankan unit test atau CI.
+
+UI/E2E tests
+
+Uji:
+
+- Login.
+- Setup administrator pertama.
+- Tambah bot.
+- Validasi token gagal.
+- Bot muncul setelah berhasil ditambahkan.
+- Start/Stop/Restart.
+- Pengaturan bot.
+- Log.
+- Penghapusan bot.
+- Penolakan akses tanpa autentikasi.
+
+Termux compatibility tests
+
+Dokumentasikan hasil pengujian aktual untuk:
+
+- Arsitektur Android yang tersedia.
+- Versi Node.js.
+- Versi Prisma.
+- Driver SQLite yang digunakan.
+- Generate Prisma Client.
+- Koneksi database.
+- Migration.
+- Build frontend.
+- Startup lengkap.
+
+Jangan mengklaim semua tes Termux berhasil jika hanya diuji di Linux desktop.
+
+---
+
+14. STATIC ANALYSIS DAN CI
+
+Buat workflow GitHub Actions untuk:
+
+- Checkout source.
+- Setup Node.js.
+- Install dependency secara reproducible.
+- Lint.
+- Typecheck.
+- Unit tests.
+- Database integration tests.
+- Build frontend.
+- Build backend.
+- Pemeriksaan dependency dan konfigurasi security.
+- Upload artifact build bila sesuai.
+
+Pisahkan tes Linux standar dari tes Android/Termux.
+
+Jika tidak tersedia runner Android yang sesuai, nyatakan bahwa pengujian Termux harus dilakukan pada perangkat atau lingkungan Android yang nyata.
+
+Jangan menyimpan token Telegram atau kunci enkripsi di repository.
+
+Jangan membuat workflow yang mengunggah database development atau secret sebagai artifact.
+
+---
+
+15. LOGGING DAN OBSERVABILITY
+
+Gunakan structured logging.
+
+Setiap log dapat memuat:
+
+- Timestamp.
+- Level.
+- Event.
+- Bot ID internal.
+- Worker ID jika tersedia.
+- Error code.
+- Durasi operasi jika relevan.
+
+Jangan mencatat:
+
+- Token Telegram.
+- Password.
+- Session cookie.
+- Encryption key.
+- Authorization header.
+- Request body yang mengandung rahasia.
+
+Implementasikan:
+
+- Log retention.
+- Batas ukuran pesan.
+- Pagination.
+- Error normalization.
+- Health checks.
+- Heartbeat.
+- Informasi runtime.
+- Pembersihan log lama.
+
+Jangan menyimpan update Telegram lengkap tanpa batas jika update tersebut dapat memuat informasi pribadi.
+
+---
+
+16. BACKUP, RESTORE, DAN DATA LIFECYCLE
+
+Sediakan:
+
+- Backup database.
+- Verifikasi backup.
+- Restore dengan konfirmasi eksplisit.
+- Validasi integritas SQLite.
+- Dokumentasi lokasi file.
+- Prosedur migrasi.
+- Penanganan data yang rusak.
+- Kebijakan retensi log.
+- Penghapusan bot yang aman.
+
+Backup harus konsisten meskipun aplikasi sedang aktif.
+
+Restore tidak boleh otomatis menimpa database aktif tanpa konfirmasi dan backup sebelumnya.
+
+Jangan pernah menghapus seluruh direktori data ketika aplikasi diperbarui.
+
+---
+
+17. ERROR HANDLING
+
+Semua error harus memiliki:
+
+- Kode yang stabil.
+- Pesan yang dapat dipahami.
+- Konteks diagnostik yang aman.
+- Tindakan pemulihan yang disarankan bila memungkinkan.
+
+Tangani:
+
+- Prisma Client belum dibuat.
+- Database tidak bisa diakses.
+- Migration gagal.
+- Database terkunci.
+- Disk penuh.
+- Kunci enkripsi tidak tersedia.
+- Token Telegram tidak valid.
+- Telegram API timeout.
+- Konflik polling.
+- WebSocket terputus.
+- Worker crash.
+- Port bentrok.
+- Dependency tidak kompatibel dengan Android.
+
+Jangan menelan exception tanpa logging.
+
+Jangan mengulang operasi yang berpotensi merusak data secara otomatis.
+
+---
+
+18. DOKUMENTASI WAJIB
+
+README harus menjelaskan:
+
+- Tujuan project.
+- Arsitektur.
+- Persyaratan Termux.
+- Persyaratan Node.js.
+- Instalasi awal.
+- Cara menjalankan "npm run setup".
+- Cara menjalankan "npm run dev".
+- Cara membuat administrator pertama.
+- Cara mendapatkan token dari BotFather.
+- Cara menambahkan bot.
+- Cara mengaktifkan fitur.
+- Cara melihat log.
+- Cara backup dan restore.
+- Cara memperbarui aplikasi.
+- Cara mengatasi masalah Prisma di Android.
+- Cara mengatasi database rusak atau terkunci.
+- Batasan proses latar belakang Android.
+- Cara menjalankan test.
+- Cara deployment pada perangkat atau server yang sesuai.
+
+Dokumentasikan juga perbedaan antara menjalankan project di Termux dan Linux server biasa.
+
+---
+
+19. KRITERIA PENERIMAAN
+
+Project baru boleh dianggap selesai jika seluruh poin yang relevan sudah diuji:
+
+1. Dependency terpasang tanpa mengandalkan Docker.
+2. Setup pertama dapat menyiapkan SQLite dan Prisma.
+3. "npm run dev" berjalan setelah setup pertama tanpa konfigurasi database manual.
+4. Database tetap tersedia setelah aplikasi dihentikan dan dijalankan kembali.
+5. Migration tidak menghapus data.
+6. Login benar-benar melindungi endpoint administratif.
+7. Token diverifikasi sebelum bot disimpan.
+8. Token disimpan dalam bentuk terenkripsi.
+9. Bot dapat dimulai, dihentikan, dan dimulai ulang.
+10. Beberapa bot dapat berjalan bersamaan dengan lifecycle terpisah.
+11. Konflik token tidak menghasilkan worker ganda yang tidak terkendali.
+12. Fitur command bawaan bekerja.
+13. Dashboard menampilkan status dan log nyata.
+14. Perubahan konfigurasi tersimpan secara persisten.
+15. Backup dan restore diuji.
+16. Unit test, integration test, typecheck, lint, dan build berhasil pada lingkungan yang didukung.
+17. Kompatibilitas Termux diuji secara nyata atau keterbatasannya dinyatakan secara eksplisit.
+18. Tidak ada rahasia yang di-commit ke repository.
+19. Tidak ada tombol UI yang sekadar menjadi dekorasi.
+20. README memungkinkan developer lain menjalankan project tanpa menebak langkah setup.
+
+---
+
+20. ATURAN EKSEKUSI UNTUK AI CODING AGENT
+
+- Periksa kompatibilitas dependency sebelum memilih implementasi.
+- Prioritaskan dokumentasi resmi Prisma, grammY, Fastify, SQLite, dan Termux.
+- Buat source code yang benar-benar lengkap, bukan pseudocode.
+- Jangan meninggalkan TODO pada fungsi inti.
+- Jangan membuat mock sebagai pengganti implementasi produksi tanpa penandaan yang jelas.
+- Jangan menghapus fitur yang diminta hanya untuk menyederhanakan pengerjaan.
+- Jangan membuat ulang seluruh project tanpa alasan ketika sedang mengerjakan perubahan pada repository yang sudah ada.
+- Gunakan transaksi database jika operasi melibatkan beberapa perubahan yang harus konsisten.
+- Gunakan graceful shutdown.
+- Gunakan dependency yang terpelihara dan versi yang kompatibel.
+- Hindari overengineering, tetapi jangan mengorbankan keamanan.
+- Jalankan test dan perbaiki semua kegagalan yang ditemukan.
+- Jangan mengklaim build berhasil tanpa menjalankan build.
+- Jangan mengklaim kompatibilitas Termux tanpa bukti pengujian.
+- Jika terdapat hambatan native dependency, jelaskan masalahnya dan implementasikan alternatif yang teruji, bukan menyembunyikan error.
+
+HASIL AKHIR
+
+Serahkan:
+
+1. Full source code.
+2. Konfigurasi npm workspaces.
+3. Prisma schema dan migration.
+4. Database bootstrap otomatis.
+5. Backend API.
+6. Frontend dashboard.
+7. Bot engine.
+8. Supervisor dan runtime lifecycle.
+9. Autentikasi dan perlindungan token.
+10. Testing lengkap.
+11. GitHub Actions.
+12. README.
+13. Laporan pengujian dan keterbatasan platform.
+
+Definisi keberhasilan: pengguna Termux bisa menyiapkan project satu kali, kemudian menggunakan "npm run dev" untuk membuka dashboard, menambahkan token bot melalui UI, dan menjalankan bot dengan fitur template yang tersedia—tanpa membuat database secara manual, tanpa Docker, dan tanpa mengedit source code untuk setiap bot baru.
